@@ -12,4 +12,11 @@ python handin.py --update
 
 ## USAGE
 
-`python handin.py --help`
+```shell
+python handin.py --help
+```
+
+## TODO
+
+- submitting assignments
+- creating account (username + password)
