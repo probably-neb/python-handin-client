@@ -10,19 +10,33 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 parser = argparse.ArgumentParser(description="Handin client")
 
 parser.add_argument(
-    "--list", "-l", action="store_true", help="List active assignments"
-)
-parser.add_argument(
     "--verbose",
     "-v",
     action="store_true",
     help="Be verbose. Mostly just prints debug information",
 )
 
+# TODO: turn these into subcommands
+options = parser.add_mutually_exclusive_group(required=False)
+
+options.add_argument(
+    "--list", "-l", action="store_true", help="List active assignments."
+)
+options.add_argument(
+        "--update", "-u", dest="update_certs", action="store_true", help="Download server certifications file (.pem file). Note: this file is required for the handin client to work. "
+        )
+
 HOSTNAME = "handin-1.brinckerhoff.org"
 PORT = 7979
 
 ROOT_CERTS = pathlib.Path(__file__).parent / "handin-server-cert.pem"
+
+# TODO: replace 2234 with {quarter} to allow for future generations
+ROOT_CERTS_GH_LINK = "https://raw.githubusercontent.com/jbclements/racket-handin-client/master/2234-csc430-handin/server-cert.pem"
+
+def download_certs():
+    import urllib.request
+    urllib.request.urlretrieve(ROOT_CERTS_GH_LINK, ROOT_CERTS)
 
 
 def printf(*args, **kwargs):
@@ -105,6 +119,8 @@ class Handin:
 
 if __name__ == "__main__":
     args = parser.parse_args()
+    if args.update_certs:
+        download_certs()
     with Handin(args.verbose) as handin:
         if args.list:
             assignments = handin.get_active_assignments()
