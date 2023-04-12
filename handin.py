@@ -29,7 +29,7 @@ options.add_argument(
 HOSTNAME = "handin-1.brinckerhoff.org"
 PORT = 7979
 
-ROOT_CERTS = pathlib.Path(__file__).parent / "handin-server-cert.pem"
+ROOT_CERTS = pathlib.Path(__file__).parent / "server-cert.pem"
 
 # TODO: replace 2234 with {quarter} to allow for future generations
 ROOT_CERTS_GH_LINK = "https://raw.githubusercontent.com/jbclements/racket-handin-client/master/2234-csc430-handin/server-cert.pem"
