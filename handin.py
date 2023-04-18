@@ -16,18 +16,29 @@ parser.add_argument(
     help="Be verbose. Mostly just prints debug information",
 )
 
-# TODO: turn these into subcommands
-options = parser.add_mutually_exclusive_group(required=False)
+subcmds = parser.add_subparsers(title="subcommands", dest="subcmd")
 
-options.add_argument(
-    "--list", "-l", action="store_true", help="List active assignments."
-)
-options.add_argument(
-    "--update",
-    "-u",
-    dest="update_certs",
-    action="store_true",
+list_cmd = subcmds.add_parser("list", help="List active assignments.")
+
+# TODO: quarter/link argument for future generations
+update_certs_cmd = subcmds.add_parser(
+    "update-certs",
     help="Download server certifications file (.pem file). Note: this file is required for the handin client to work. ",
+)
+
+submit_cmd = subcmds.add_parser("submit", help="Submit an assignment")
+# TODO: validate assignment name using get_active_assignments before submission
+submit_cmd.add_argument(
+    "--assignment", "-a", nargs=1, required=True, help="The assignment to submit too"
+)
+submit_cmd.add_argument(
+    "--username", "-u", nargs=1, required=True, help="Handin username"
+)
+submit_cmd.add_argument(
+    "--password", "-p", nargs=1, required=True, help="Handin password"
+)
+submit_cmd.add_argument(
+    "--file", "-f", nargs=1, required=True, help="The file to submit"
 )
 
 HOSTNAME = "handin-1.brinckerhoff.org"
@@ -181,6 +192,7 @@ class Handin:
                     read_messages()
                 case _:
                     return msg
+
         self.ensure_ok("submit", msg=read_messages(), expected="confirm")
         self.write("check")
         self.ensure_ok("check", msg=read_messages(), expected="ok")
@@ -188,10 +200,20 @@ class Handin:
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    if args.update_certs:
-        download_certs()
     with Handin(args.verbose) as handin:
-        if args.list:
-            assignments = handin.get_active_assignments()
-            for assignment in assignments:
-                print(assignment)
+        match args.subcmd:
+            case "list":
+                assignments = handin.get_active_assignments()
+                for assignment in assignments:
+                    print(assignment)
+            case "update-certs":
+                download_certs()
+            case "submit":
+                # TODO: ask for input for unspecified args instead of making them all required
+                assign = args.assignment
+                uname = args.username
+                pword = args.password
+                file = args.file
+                handin.submit(uname, pword, assign, file)
+            case _:
+                parser.print_help()
